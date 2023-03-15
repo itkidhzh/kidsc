@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kidsc.goods.mapper.EvaluateMapper">
+  <resultMap id="BaseResultMap" type="com.kidsc.goods.model.Evaluate">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="head_portrait" jdbcType="BIGINT" property="headPortrait" />
+    <result column="nick_name" jdbcType="BIGINT" property="nickName" />
+    <collection property="evaluateImgList"
+                ofType="com.kidsc.goods.model.EvaluateImg"
+                column="{evaluateId = id}"
+                select="selectEvaluateImgByEvaluateId"/>
+    <!--ofType 表示当前集合的数据类型  column 表示selectEvaluateListPage中的id字段作为查询条件，变量为evaluateId-->
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.kidsc.goods.model.Evaluate">
+    <result column="time" jdbcType="LONGVARCHAR" property="time" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, content, score, user_id, goods_id
+  </sql>
+  <sql id="Blob_Column_List">
+    time
+  </sql>
+
+  <select id="countEvaluateNum" resultType="map">
+    SELECT
+	(select count(*) from g_evaluate where goods_id = #{goodsId} and score between 4 and 5) A,
+	(select count(*) from g_evaluate where goods_id = #{goodsId} and score = 3) B,
+	(select count(*) from g_evaluate where goods_id = #{goodsId} and score between 1 and 2) C,
+	(select count(*) from g_evaluate e inner join (select evaluate_id from g_evaluate_img ei GROUP BY ei.evaluate_id) Img on e.id = Img.evaluate_id where goods_id = #{goodsId}) img;
+  </select>
+  <select id="selectEvaluateImgByEvaluateId" resultType="com.kidsc.goods.model.EvaluateImg">
+    select image_url imageUrl from g_evaluate_img where evaluate_id = #{evaluateId}
+  </select>
+
+  <select id="countEvaluateHaveImgByGoodsId" parameterType="java.lang.Long" resultType="java.lang.Long">
+  select
+    count(e.id)
+  from
+    g_evaluate e
+  inner join
+    (select evaluate_id from g_evaluate_img group by evaluate_id) img
+  on
+    e.id = img.evaluate_id
+  where
+    goods_id = #{goodsId}
+  <if test='evaluateLevel=="A"'>
+    and score between 4 and 5
+  </if>
+  <if test='evaluateLevel=="B"'>
+    and score = 3
+  </if>
+  <if test='evaluateLevel=="C"'>
+    and score between 1 and 2
+  </if>
+  </select>
+  <resultMap id="BaseResultMapImg" type="com.kidsc.goods.model.Evaluate">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="head_portrait" jdbcType="BIGINT" property="headPortrait" />
+    <result column="nick_name" jdbcType="BIGINT" property="nickName" />
+    <result column="time" property="time"/>
+    <collection property="evaluateImgList"
+                ofType="com.kidsc.goods.model.EvaluateImg">
+
+      <id column="eiid" property="id"></id>
+      <result column="image_url" property="imageUrl"></result>
+    </collection>
+  </resultMap>
+  <select id="selectEvaluateHaveImgListPage" resultMap="BaseResultMapImg">
+    select
+    u.nick_name,e.*,ui.head_portrait,ei.id eiid,ei.image_url
+    from
+    g_evaluate e
+    inner join
+    u_user u
+    on
+    e.user_id = u.id
+    left join
+    u_user_info ui
+    on
+    ui.user_id = u.id
+    inner join
+    g_evaluate_img ei
+    on
+    e.id = ei.evaluate_id
+    where
+    e.goods_id = #{goodsId}
+    <if test='evaluateLevel=="A"'>
+      and score between 4 and 5
+    </if>
+    <if test='evaluateLevel=="B"'>
+      and score = 3
+    </if>
+    <if test='evaluateLevel=="C"'>
+      and score between 1 and 2
+    </if>
+    limit #{skipNum} ,#{pageSize}
+  </select>
+  <select id="selectEvaluateListPage" resultMap="BaseResultMap">
+    select
+        u.nick_name,e.*,ui.head_portrait
+    from
+        g_evaluate e
+    inner join
+        u_user u
+    on
+        e.user_id = u.id
+    left join
+        u_user_info ui
+    on
+        ui.user_id = u.id
+    where
+        e.goods_id = #{goodsId}
+    <if test='evaluateLevel=="A"'>
+      and score between 4 and 5
+    </if>
+    <if test='evaluateLevel=="B"'>
+      and score = 3
+    </if>
+    <if test='evaluateLevel=="C"'>
+     and score between 1 and 2
+    </if>
+    limit #{skipNum} ,#{pageSize}
+  </select>
+  <select id="countEvaluateByGoodsId" parameterType="java.lang.Long" resultType="java.lang.Long">
+    select
+        count(*)
+    from
+        g_evaluate
+    where
+        goods_id = #{goodsId}
+    <if test='evaluateLevel=="A"'>
+      and score between 4 and 5
+    </if>
+    <if test='evaluateLevel=="B"'>
+      and score = 3
+    </if>
+    <if test='evaluateLevel=="C"'>
+      and score between 1 and 2
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from g_evaluate
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from g_evaluate
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.kidsc.goods.model.Evaluate">
+    insert into g_evaluate (id, content, score, 
+      user_id, goods_id, time
+      )
+    values (#{id,jdbcType=BIGINT}, #{content,jdbcType=VARCHAR}, #{score,jdbcType=INTEGER}, 
+      #{userId,jdbcType=BIGINT}, #{goodsId,jdbcType=BIGINT}, #{time,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.kidsc.goods.model.Evaluate">
+    insert into g_evaluate
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+      <if test="score != null">
+        score,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="goodsId != null">
+        goods_id,
+      </if>
+      <if test="time != null">
+        time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null">
+        #{score,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="goodsId != null">
+        #{goodsId,jdbcType=BIGINT},
+      </if>
+      <if test="time != null">
+        #{time,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.kidsc.goods.model.Evaluate">
+    update g_evaluate
+    <set>
+      <if test="content != null">
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null">
+        score = #{score,jdbcType=INTEGER},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="goodsId != null">
+        goods_id = #{goodsId,jdbcType=BIGINT},
+      </if>
+      <if test="time != null">
+        time = #{time,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.kidsc.goods.model.Evaluate">
+    update g_evaluate
+    set content = #{content,jdbcType=VARCHAR},
+      score = #{score,jdbcType=INTEGER},
+      user_id = #{userId,jdbcType=BIGINT},
+      goods_id = #{goodsId,jdbcType=BIGINT},
+      time = #{time,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.kidsc.goods.model.Evaluate">
+    update g_evaluate
+    set content = #{content,jdbcType=VARCHAR},
+      score = #{score,jdbcType=INTEGER},
+      user_id = #{userId,jdbcType=BIGINT},
+      goods_id = #{goodsId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

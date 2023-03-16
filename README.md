@@ -12,17 +12,17 @@
 
 #### 2.1.1 用户服务
 
-<img src="C:/Users/Kid/Desktop/讲义/讲义/商城/images/database/001-user.png">
+<img src="kidsc-images/src/images/001-user.png">
 
 #### 2.1.2  商品服务
 
-<img src="C:/Users/Kid/Desktop/讲义/讲义/商城/images/database/002-goods.png">
+<img src="kidsc-images/src/images/002-goods.png">
 
 
 
 #### 2.1.3  订单服服务
 
-![image-20210911153259327](D:\my-image-host-master\003.-orders.png)
+<img src="kidsc-images/src/images/003.-orders.png">
 
 ### 3.1  项目搭建
 
@@ -79,29 +79,27 @@
 ​	其他组件：
 
 ​		1.	Eureka注册中心
-
 ​		2.	OpenFeign Web服务访问客户端
-
 ​		3.	FastJson Json工具
+        4. Seata 分布式事务框架
+    
+    
+   #### 4.1内置功能
 
-  4. Seata 分布式事务框架
+   1. Eureka注册中心：用于发现并注册服务。
 
-     #### 3.1.2 内置功能
+   2. 用户服务：用于对用户的信息进行验证，登录以及存储。
 
-     1. Eureka注册中心：用于发现并注册服务。
+   3. 商品服务：对商品的评论进行展示，等级划分以及商品库存的调用。
 
-     2. 用户服务：用于对用户的信息进行验证，登录以及存储。
+   4. 订单功能：用于记录订单信息以及订单详情，根据支付状态的不同改变订单的状态信息。
 
-     3. 商品服务：对商品的评论进行展示，等级划分以及商品库存的调用。
+   5. 定时任务：设定定时任务对未支付或者已经支付没有发货的订单进行监控，防止出现掉单等情况。
 
-     4. 订单功能：用于记录订单信息以及订单详情，根据支付状态的不同改变订单的状态信息。
+   #### 5.1快速体验
 
-     5. 定时任务：设定定时任务对未支付或者已经支付没有发货的订单进行监控，防止出现掉单等情况。
-
-        #### 3.1.3快速体验
-
-        1. 具备运行环境：JDK1.8，apache-maven-3.8.2，MySql5+，redist 6.0 +，seata 1.4.2，rabbitmq 3.7。
-        2. 修改\src\main\resources\application.properties 中的数据库参数，redis以及mq的参数。
-        3. 根据修改参数创建对应MySql数据库用户和参数。
-        4. 将通用工程模块打包到maven本地库
-        5. 将服务都配置好，注册到Eureka注册中心。
+   1. 具备运行环境：JDK1.8，apache-maven-3.8.2，MySql5+，redist 6.0 +，seata 1.4.2，rabbitmq 3.7。
+   2. 修改\src\main\resources\application.properties 中的数据库参数，redis以及mq的参数。
+   3. 根据修改参数创建对应MySql数据库用户和参数。
+   4. 将通用工程模块打包到maven本地库
+   5. 将服务都配置好，注册到Eureka注册中心。
